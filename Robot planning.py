@@ -1,11 +1,9 @@
-# 2
-# _
-# _
-# .
-
-
+# Authors - Tewoflos Girmay and Hariharan Janardhanan
 import heapq
 import math
+import matplotlib.pyplot as plt
+import numpy as np
+
 
 def read_input(file_path):
     with open(file_path, 'r') as f:
@@ -31,6 +29,8 @@ def read_input(file_path):
         grid.reverse()
         
     return (start_i, start_j), (goal_i, goal_j), grid
+
+
 def format_output(start, goal, grid, path, actions, f_values, nodes_generated):
     # First line: depth (number of moves)
     output = f"{len(actions)}\n"
@@ -59,6 +59,7 @@ def format_output(start, goal, grid, path, actions, f_values, nodes_generated):
     
     return output.strip()
 
+
 def heuristic(a, b):
     # Euclidean distance
     return math.sqrt((b[0] - a[0])**2 + (b[1] - a[1])**2)
@@ -83,6 +84,7 @@ def get_neighbors(node, grid):
             neighbors.append((idx, (ni, nj)))
     return neighbors
 
+
 def angle_cost(prev_move=None,next_move=None,k=2):
      if prev_move==None:# No angle cost for the first move from start position
          return(0)
@@ -97,7 +99,7 @@ def distance_cost(move):
          return(1)
      else:     # Odd-numbered moves (1,3,5,7) are diagonal
          return(math.sqrt(2))
-     
+
 def reconstruct_path(came_from, current, g_score, f_score):
     path = []
     actions = []
@@ -151,14 +153,55 @@ def astar(start, goal, grid, k, max_iterations=100000):
     print(f"No path found after exploring {nodes_generated} nodes.")
     return None
 
+def visualize_grid(grid, path, start, goal):
+    # Create an empty grid for visualization
+    visual_grid = np.zeros_like(grid, dtype=int)
+
+    # Mark the grid with corresponding colors
+    for i in range(len(grid)):
+        for j in range(len(grid[0])):
+            if grid[i][j] == 1:  # Illegal state (obstacle)
+                visual_grid[i][j] = 1  # Black
+            elif (j, i) == start:  # Start state
+                visual_grid[i][j] = 2  # Yellow
+            elif (j, i) == goal:  # Goal state
+                visual_grid[i][j] = 3  # Green
+            elif (j, i) in path:  # Path state
+                visual_grid[i][j] = 4  # White for legal states in the path
+
+    # Define a custom color map for the grid
+    cmap = plt.cm.colors.ListedColormap(['white','black','yellow', 'green'])
+    bounds = [0, 1, 2, 3, 4]
+    norm = plt.Normalize(vmin=0, vmax=4)
+
+    # Set up the plot
+    fig, ax = plt.subplots(figsize=(10, 6))
+    ax.imshow(visual_grid, cmap=cmap, origin='lower', extent=[-0.5, len(grid[0]) - 0.5, -0.5, len(grid) - 0.5], norm=norm)
+
+    # Mark start and goal on the grid
+    start_x, start_y = start
+    goal_x, goal_y = goal
+    ax.scatter(start_x, start_y, marker='o', color='red', s=200, label="Start")
+    ax.scatter(goal_x, goal_y, marker='X', color='yellow', s=200, label="Goal")
+
+    # Adding grid lines for better visualization
+    ax.set_xticks(np.arange(-0.5, len(grid[0]), 1), minor=True)
+    ax.set_yticks(np.arange(-0.5, len(grid), 1), minor=True)
+    ax.grid(which="minor", color="gray", linestyle='-', linewidth=1)
+
+    # Adding legend
+    ax.legend()
+    ax.set_title("A* Pathfinding Visualization")
+    plt.show()
+
 def main(input_file, output_file, k):
-    start, goal, grid = read_input(input_file)     # Read input file and get start/goal positions and grid
+    start, goal, grid = read_input(input_file)
     print(f"Start: {start}, Goal: {goal}")
     print(f"Grid size: {len(grid)}x{len(grid[0])}")
     
-    result = astar(start, goal, grid, k)  # Run A* algorithm
+    result = astar(start, goal, grid, k)
     
-    if result is not None: # Handle output based on whether path was found
+    if result is not None:
         path, actions, f_values, nodes_generated = result
         output = format_output(start, goal, grid, path, actions, f_values, nodes_generated)
         with open(output_file, 'w') as f:
@@ -166,13 +209,20 @@ def main(input_file, output_file, k):
         print(f"Path found! Check {output_file} for results.")
         print(f"Path length: {len(path)}")
         print(f"Nodes generated: {nodes_generated}")
+        
+        # Visualize the grid with the path, start, and goal
+        visualize_grid(grid, path, start, goal)
     else:
         print("No path found.")
         with open(output_file, 'w') as f:
             f.write("No path found.\n")
         
 if __name__ == "__main__":
-    input_file = "Input.txt" # Path to the input file
-    output_file = "output.txt"  # Output file name
-    k = 2 #set the k value
+    input_file = 'Input.txt'
+    output_file = 'output_file.txt'  # Replace with your output file path
+    k = 2  # You can adjust the penalty factor 'k' for angle change cost
     main(input_file, output_file, k)
+
+
+
+     
