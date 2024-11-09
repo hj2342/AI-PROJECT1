@@ -1,3 +1,16 @@
+'''
+for input files
+First remove the first line (start/goal coordinates)
+tail -n +2 input.txt > input_grid.txt
+python vis.py input_grid.txt
+
+for output files
+ First remove the first four lines (depth, nodes, moves, f-values)
+tail -n +5 output.txt > output_grid.txt
+python vis.py output_grid.txt
+'''
+
+
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
@@ -7,6 +20,7 @@ def plot_maze(file_path):
     try:
         # Load the maze from the .txt file
         with open(file_path, "r") as file:
+            file.readline()
             maze = np.loadtxt(file_path, delimiter=" ", usecols=range(50))
 
         # Initialize the plot
